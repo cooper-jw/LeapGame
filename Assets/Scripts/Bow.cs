@@ -1,55 +1,78 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Bow : MonoBehaviour {
+public class Bow : MonoBehaviour
+{
     public GameObject arrowPrefab;
     public Transform spawnPosition;
     public Animation anim;
 
-    public float drawTime = 1.0f, fullDrawPerc = 1.0f;
-    public float minArrowPower = 1.0f, maxArrowPower = 10.0f;
-    public float blendFadeLength = 0.05f;
+    public Transform pivotTransform;
+    public Transform handleTransform;
+    public Transform nockTransform;
+    public Transform nockRestTransform;
+
+    private const float minPull = 0.05f;
+    private const float maxPull = 0.5f;
+    private const float drawTime = 1.0f;
+
+    public float arrowMinVelocity = 3f;
+    public float arrowMaxVelocity = 30f;
+    private float arrowVelocity = 30f;
+
+    public AudioClip drawSound;
+    public AudioClip arrowSlideSound;
+    public AudioClip releaseSound;
+    public AudioClip nockSound;
+
 
     private bool isDrawing = false;
     private float arrowMinMaxPowDif;
     private float curDrawPerc, curDrawTime;
 
     public GameObject currentArrow;
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start()
+    {
         curDrawPerc = curDrawTime = 0.0f;
-        arrowMinMaxPowDif = maxArrowPower - minArrowPower;
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	    if(Input.GetMouseButton(0)) {
-            if(isDrawing) {
-                curDrawTime += Time.deltaTime;
-                curDrawPerc = curDrawTime;
-                anim.Blend("Bow_Draw", curDrawTime, blendFadeLength);
-            } else {
+        arrowMinMaxPowDif = arrowMaxVelocity - arrowMinVelocity;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (Input.GetMouseButton(0))
+        {
+            if (isDrawing)
+            {
+
+            }
+            else
+            {
                 curDrawPerc = curDrawTime = 0.0f;
                 SpawnArrow();
                 isDrawing = true;
             }
 
 
-        } else if(Input.GetMouseButtonUp(0)) {
-            if(isDrawing) {
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            if (isDrawing)
+            {
                 Fire();
             }
         }
-	}
+    }
 
     void Fire()
     {
-        if(isDrawing && currentArrow != null)
+        if (isDrawing && currentArrow != null)
         {
             Arrow arrow = currentArrow.GetComponent<Arrow>();
             Rigidbody rig = currentArrow.GetComponent<Rigidbody>();
             rig.isKinematic = false;
-            float power = minArrowPower + (arrowMinMaxPowDif * curDrawPerc);
+            float power = arrowMinVelocity + (arrowMinMaxPowDif * curDrawPerc);
             rig.AddRelativeForce(Vector3.forward * power, ForceMode.Impulse);
             isDrawing = false;
             arrow.isFired = true;
